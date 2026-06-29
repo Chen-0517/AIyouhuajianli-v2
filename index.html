@@ -652,6 +652,7 @@
             try{localStorage.setItem('zhilv_versions_v7',JSON.stringify(versions));}catch(e){}
             showSaveTip();
         },400);};})();
+        const saveData=doSave;
         function showSaveTip(){$('saveTip').classList.add('show');clearTimeout($('saveTip')._t);$('saveTip')._t=setTimeout(()=>$('saveTip').classList.remove('show'),1500);}
 
         // ========== AI润色 ==========
