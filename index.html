@@ -1064,8 +1064,8 @@ ${content}
 
         // ========== 初始化 ==========
         updateAPIStatus();renderAll();updateMobileLayout();
-        // 首次访问显示引导
-        if(!localStorage.getItem('zhilv_onboarding_done')&&!isMobile()){setTimeout(()=>showOnboarding(0),800);}
+        // 新手引导已关闭（弹窗按钮存在兼容性问题）
+        // if(!localStorage.getItem('zhilv_onboarding_done')&&!isMobile()){setTimeout(()=>showOnboarding(0),800);}
     </script>
 </body>
 </html>
