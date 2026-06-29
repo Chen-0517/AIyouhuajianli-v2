@@ -534,11 +534,15 @@
                         signal:controller.signal
                     });
                     clearTimeout(timeout);
-                    if(!response.ok){ const err=await response.json(); throw new Error(err.base_error?.message||'API调用失败'); }
+                    if(!response.ok){
+                        let errMsg='API调用失败('+response.status+')';
+                        try{ const err=await response.json(); errMsg=err.base_error?.message||err.error?.message||err.message||errMsg; }catch(_){}
+                        throw new Error(errMsg);
+                    }
                     const data=await response.json();
                     return data.choices?.[0]?.messages?.[0]?.text||data.choices?.[0]?.message?.content||'';
                 }catch(e){
-                    lastError=e;
+                    lastError=e; console.error('MiniMax API error (attempt '+(i+1)+'):',e);
                     if(i<retries){ await new Promise(r=>setTimeout(r,1000*(i+1))); }
                 }
             }
@@ -623,7 +627,7 @@
             Object.entries(t).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k,v));
             resumeData.theme=themeName; saveData();
         }
-        let _idSeq=Date.now()+100;function generateId(){return ++_idSeq;}
+        let _idSeq=Date.now(); function generateId(){ return _idSeq++; }
 
         // ========== 进度条 ==========
         function updateProgress() {
@@ -851,7 +855,7 @@ ${content}
         function bindListEvents(type,listEl) {
             listEl.querySelectorAll('.item-title,.item-content').forEach(el=>{
                 el.addEventListener('input',e=>{
-                    const id=parseFloat(e.target.dataset.id);
+                    const id=parseInt(e.target.dataset.id,10);
                     const field=e.target.classList.contains('item-title')?'title':'content';
                     const item=resumeData[type].find(i=>i.id===id);
                     if(item){item[field]=e.target.value;saveData();updateProgress();}
@@ -864,7 +868,7 @@ ${content}
             });
             listEl.querySelectorAll('.delete-btn').forEach(btn=>{
                 btn.addEventListener('click',()=>{
-                    const id=parseFloat(btn.dataset.id);
+                    const id=parseInt(btn.dataset.id,10);
                     if(resumeData[type].length<=1){showToast('至少保留一条记录','warning');return;}
                     if(confirm('确定删除？')){
                         resumeData[type]=resumeData[type].filter(i=>i.id!==id);saveData();
@@ -875,19 +879,22 @@ ${content}
             });
             listEl.querySelectorAll('.ai-btn').forEach(btn=>{
                 btn.addEventListener('click',async()=>{
-                    const id=parseFloat(btn.dataset.id);
+                    const id=parseInt(btn.dataset.id,10);
+                    if(isNaN(id)){showToast('数据错误，请刷新页面','error');return;}
                     const item=resumeData[type].find(i=>i.id===id);
-                    if(!item?.title?.trim()){showToast('请先填写标题','warning');return;}
+                    if(!item){showToast('条目不存在，请刷新页面','error');return;}
+                    if(!item.title||!item.title.trim()){showToast('请先填写标题后再使用AI优化','warning');return;}
                     if(!apiConfig.apiKey||!apiConfig.groupId){showToast('请先配置API Key','warning');showAPISettings();return;}
                     btn.textContent='✨ AI优化中...';btn.disabled=true;
                     try{
-                        const optimized=await smartPolishWithAI(item.content,item.title,type);
+                        const optimized=await smartPolishWithAI(item.content||'',item.title,type);
                         item.content=optimized;saveData();
                         const map={experience:['experienceList','preview-experience'],projects:['projectList','preview-project']};
                         renderList(type,$(map[type][0]),$(map[type][1]));updateProgress();
                         showToast('AI润色完成！','success');
                     }catch(e){
-                        showToast('AI优化失败: '+e.message,'error');
+                        console.error('AI优化错误:',e);
+                        showToast('AI优化失败，请检查网络或API配置','error');
                     }finally{btn.textContent='✨ AI优化';btn.disabled=false;}
                 });
             });
