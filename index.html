@@ -623,7 +623,7 @@
             Object.entries(t).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k,v));
             resumeData.theme=themeName; saveData();
         }
-        function generateId(){return Date.now()+Math.random();}
+        let _idSeq=Date.now()+100;function generateId(){return ++_idSeq;}
 
         // ========== 进度条 ==========
         function updateProgress() {
@@ -655,24 +655,25 @@
             const isIntern=resumeData.template==='template-intern';
             const typeName=type==='experience'?'实践经历':'项目经历';
             const targetJob=resumeData.target||'相关岗位';
-            const prompt=`你是一位专业的简历撰写顾问。请帮我优化以下${typeName}描述。
+            const hasContent=content&&content.trim();
+            const prompt=`你是一位专业的简历撰写顾问。请帮我${hasContent?'优化':'撰写'}以下${typeName}描述。
 
 **我的经历背景：**
 - ${typeName}标题：${title}
-- 原始描述：${content}
+${hasContent?`- 原始描述：${content}`:'- 当前描述：暂无，请根据标题和岗位方向帮我生成一份合理的经历描述'}
 - 求职方向：${targetJob}
 - 简历风格：${isIntern?'专业商务风格，适合求职面试':'清新活力风格，适合社团竞选'}
 
 **要求：**
-1. 保留原始经历中的关键信息（具体数字、公司/组织名称、使用的工具/技能等）
+1.${hasContent?'保留原始经历中的关键信息（具体数字、公司/组织名称、使用的工具/技能等）':'基于标题合理推断典型工作内容，使用常见的简历话术'}
 2. 优化表达方式，使其更专业、简洁、有说服力
 3. 使用简历规范用语，如"负责"、"参与"、"完成"等
 4. 每条描述控制在30-50字左右
 5. 如果是求职风格，要突出成果和价值；如果是社团风格，要突出个人成长和能力
-6. 禁止编造经历，所有描述必须基于原始内容
+6. ${hasContent?'禁止编造经历，所有描述必须基于原始内容':'请标注"（建议根据实际情况修改）"'}
 7. 直接输出优化后的内容，不要解释，用"•"作为列表符号
 
-请直接输出优化后的描述：`;
+请直接输出${hasContent?'优化后':'生成'}的描述：`;
             const result=await callMiniMaxAI([{role:'user',content:prompt}]);
             return result.trim();
         }
@@ -876,7 +877,7 @@ ${content}
                 btn.addEventListener('click',async()=>{
                     const id=parseFloat(btn.dataset.id);
                     const item=resumeData[type].find(i=>i.id===id);
-                    if(!item?.title?.trim()||!item?.content?.trim()){showToast('请先填写标题和内容','warning');return;}
+                    if(!item?.title?.trim()){showToast('请先填写标题','warning');return;}
                     if(!apiConfig.apiKey||!apiConfig.groupId){showToast('请先配置API Key','warning');showAPISettings();return;}
                     btn.textContent='✨ AI优化中...';btn.disabled=true;
                     try{
