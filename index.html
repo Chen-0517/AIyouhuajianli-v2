@@ -1,0 +1,1043 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="version" content="2.0.0-final-20260629">
+    <title>鏅哄饱宸ュ潑 - AI绠€鍘嗕紭鍖栧姪鎵?/title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", Arial, sans-serif; }
+
+        :root {
+            --primary: #ff7b54;
+            --primary-light: #ffb26b;
+            --primary-dark: #e55d3a;
+            --bg-warm: #fff8f5;
+            --accent: #ffd32a;
+            --success: #26de81;
+        }
+
+        /* ========== A4绠€鍘?- 涓撲笟鏍囧噯鎺掔増 ========== */
+        .resume-preview {
+            width: 210mm; padding: 22mm 18mm; background: #ffffff;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+            font-family: "Microsoft YaHei", "PingFang SC", "SimSun", serif;
+            font-size: 10.5pt; line-height: 1.7; color: #333333;
+        }
+        .resume-preview h1.name {
+            font-size: 22pt; font-weight: 700; color: var(--primary-dark);
+            letter-spacing: 4px; text-align: center; margin-bottom: 6px;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .resume-preview .target-line { font-size: 11pt; color: #666; text-align: center; margin-bottom: 8px; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+        .resume-preview .contact-line { font-size: 10pt; color: #888; text-align: center; margin-bottom: 18px; }
+        .resume-preview .contact-line span { margin: 0 10px; }
+        .resume-preview .section-title { font-size: 12pt; font-weight: 700; color: var(--primary); border-bottom: 1.5px solid var(--primary); padding-bottom: 3px; margin-bottom: 10px; margin-top: 14px; }
+        .resume-preview .content-text { font-size: 10.5pt; color: #444; line-height: 1.7; margin-bottom: 5px; }
+        .resume-preview .content-bold { font-weight: 600; color: #333; }
+        .resume-preview .small-text { font-size: 9pt; color: #888; }
+        .resume-section { page-break-inside: avoid; break-inside: avoid; }
+        .empty-placeholder { color: #ddd; font-style: normal; }
+        .template-intern .resume-header { text-align: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 2px solid var(--primary); }
+        .template-club .resume-body { display: flex; gap: 15px; }
+        .template-club .resume-sidebar { width: 28%; flex-shrink: 0; padding-right: 12px; border-right: 1.5px solid #e0e0e0; }
+        .template-club .resume-main { width: 72%; }
+        .template-club .resume-header { margin-bottom: 15px; text-align: center; }
+        .template-club .resume-header h1.name { color: var(--success); }
+        .template-club .section-title { color: var(--success); border-color: var(--success); }
+        .template-club .sidebar-section { margin-bottom: 14px; }
+        .template-club .sidebar-section .section-title { font-size: 11pt; margin-bottom: 6px; }
+
+        .input-base { transition: all 0.25s ease; border: 1.5px solid #f0e6e3; }
+        .input-base:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255,123,84,0.12); outline: none; background: #fff; }
+        .input-base:hover:not(:focus) { border-color: var(--primary-light); }
+
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); transition: all 0.3s ease; }
+        .btn-primary:hover { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,123,84,0.35); }
+        .btn-ai { background: linear-gradient(135deg, var(--accent) 0%, var(--primary-light) 100%); color: #7c4a03; transition: all 0.3s ease; }
+        .btn-ai:hover { background: linear-gradient(135deg, #ffc107 0%, var(--accent) 100%); transform: translateY(-1px); }
+        .btn-ai:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .btn-secondary { background: #fff; border: 1.5px solid #f0e6e3; color: #636e72; transition: all 0.25s ease; }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--bg-warm); }
+
+        .template-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid #f0e6e3; }
+        .template-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(255,123,84,0.12); }
+        .template-card.selected { border-color: var(--primary) !important; background: linear-gradient(135deg, var(--bg-warm), #fff5f2) !important; }
+        .module-card { transition: all 0.25s ease; border: 1px solid #f5ebe7; background: #fff; }
+        .module-card:hover { border-color: #ffd5c8; box-shadow: 0 4px 16px rgba(255,123,84,0.08); }
+        .save-tip { opacity: 0; transform: translateY(-8px); transition: all 0.3s ease; pointer-events: none; }
+        .save-tip.show { opacity: 1; transform: translateY(0); }
+        .progress-bar { transition: width 0.5s cubic-bezier(0.4,0,0.2,1); background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--accent)); }
+        .exp-item { background: linear-gradient(135deg, #fffaf8, #fff5f2); border: 1px solid #f5ebe7; transition: all 0.2s ease; }
+        .exp-item:hover { border-color: #ffd5c8; box-shadow: 0 2px 8px rgba(255,123,84,0.08); }
+        .delete-btn { transition: all 0.2s ease; color: #b2bec3; }
+        .delete-btn:hover { color: #ff4757; background: #fff0f0; }
+        .tool-panel { background: linear-gradient(135deg, var(--bg-warm), #fff); border-top: 1px solid #f5ebe7; padding: 12px; }
+        .tool-btn { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #fff; border: 1.5px solid #f0e6e3; border-radius: 10px; cursor: pointer; transition: all 0.25s ease; font-size: 13px; color: #636e72; }
+        .tool-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--bg-warm); transform: translateY(-1px); }
+        .preview-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: #fff; padding: 8px 12px; border-radius: 10px; }
+        .zoom-slider { width: 100px; height: 4px; -webkit-appearance: none; background: #e0e0e0; border-radius: 2px; outline: none; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--primary); border-radius: 50%; cursor: pointer; }
+        .zoom-value { font-size: 12px; color: var(--primary); font-weight: 600; min-width: 35px; text-align: center; }
+        .score-circle { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--primary) calc(var(--score)*1%), #f0e6e3 0%); display: flex; align-items: center; justify-content: center; }
+        .score-circle-inner { width: 64px; height: 64px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: var(--primary); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .modal-content { background: #fff; border-radius: 16px; padding: 24px; max-width: 90vw; max-height: 80vh; overflow-y: auto; transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .api-settings { background: linear-gradient(135deg, #fff8f5, #fff); border: 1px solid #ffd5c8; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .api-settings input { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; margin-top: 6px; }
+        .api-settings input:focus { border-color: var(--primary); outline: none; }
+        .api-status { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; }
+        .api-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; }
+        .api-status .dot.connected { background: #26de81; }
+        .api-status .dot.error { background: #ff4757; }
+
+        /* ========== Toast 閫氱煡 ========== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 14px 20px; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.15); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); pointer-events: auto; max-width: 380px; display: flex; align-items: center; gap: 10px; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: linear-gradient(135deg, #26de81, #20bf6b); }
+        .toast.error { background: linear-gradient(135deg, #ff4757, #ff6348); }
+        .toast.info { background: linear-gradient(135deg, #3867d6, #4b7bec); }
+        .toast.warning { background: linear-gradient(135deg, #ffa502, #ff7f50); }
+
+        /* ========== 鏂版墜寮曞 ========== */
+        .onboarding-overlay { position: fixed; inset: 0; z-index: 3000; pointer-events: none; }
+        .onboarding-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2999; }
+        .onboarding-spotlight { position: absolute; box-shadow: 0 0 0 4000px rgba(0,0,0,0.6); border-radius: 12px; z-index: 3001; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); }
+        .onboarding-tooltip { position: fixed; z-index: 3002; background: #fff; border-radius: 16px; padding: 22px 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); max-width: 360px; min-width: 280px; transition: all 0.4s ease; }
+        .onboarding-tooltip h3 { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+        .onboarding-tooltip p { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 16px; }
+        .onboarding-tooltip .onboarding-steps { display: flex; gap: 4px; margin-bottom: 14px; }
+        .onboarding-tooltip .onboarding-dot { width: 8px; height: 8px; border-radius: 50%; background: #e0e0e0; transition: all 0.3s ease; }
+        .onboarding-tooltip .onboarding-dot.active { background: var(--primary); width: 24px; border-radius: 4px; }
+        .onboarding-tooltip .onboarding-btns { display: flex; gap: 10px; justify-content: flex-end; }
+        .onboarding-tooltip .btn-skip { color: #999; font-size: 13px; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; }
+        .onboarding-tooltip .btn-skip:hover { color: #666; background: #f5f5f5; }
+        .onboarding-tooltip .btn-next { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; padding: 9px 22px; border-radius: 10px; border: none; transition: all 0.2s; }
+        .onboarding-tooltip .btn-next:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,123,84,0.3); }
+
+        /* ========== JD鍖归厤鍗＄墖 ========== */
+        .jd-match-card { background: #fff; border: 2px solid #f0e6e3; border-radius: 12px; padding: 16px; transition: all 0.3s ease; }
+        .jd-match-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(255,123,84,0.08); }
+        .jd-tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin: 2px; }
+        .jd-tag.match { background: #d4edda; color: #155724; }
+        .jd-tag.miss { background: #fff3cd; color: #856404; }
+        .jd-tag.gap { background: #f8d7da; color: #721c24; }
+        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ========== 绉诲姩绔搷搴斿紡 ========== */
+        @media (max-width: 1024px) {
+            body.flex { flex-direction: column !important; }
+            .main-flex { flex-direction: column !important; }
+            .desktop-only { display: none !important; }
+            .mobile-only { display: block !important; }
+
+            /* 宸︿晶杈规爮鎶樺彔涓洪《閮ㄦ爮 */
+            .sidebar-mobile { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px; padding: 10px 14px; overflow-x: auto; white-space: nowrap; width: 100% !important; border-right: none !important; border-bottom: 1px solid #e0e0e0; }
+            .sidebar-mobile > * { flex-shrink: 0; }
+
+            /* 妯℃澘鍗＄墖妯帓 */
+            .templates-row { display: flex; gap: 8px; }
+            .templates-row .template-card { min-width: 120px; font-size: 12px; padding: 8px; }
+
+            /* 涓爮鍏ㄥ */
+            .center-full { flex: 1 !important; width: 100% !important; max-width: 100% !important; padding: 12px !important; }
+
+            /* 鍙虫爮闅愯棌锛岀敤Tab鍒囨崲 */
+            .preview-aside { display: none; width: 100% !important; overflow-y: auto; max-height: 100vh; }
+            .preview-aside.show-mobile { display: flex !important; }
+
+            /* Tab鍒囨崲瀵艰埅 */
+            .mobile-tabs { display: flex; gap: 0; border-bottom: 2px solid #f0e6e3; margin-bottom: 12px; }
+            .mobile-tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+            .mobile-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+            /* 姹夊牎鑿滃崟 */
+            .hamburger { display: flex !important; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: #f5f5f5; cursor: pointer; font-size: 18px; }
+            .mobile-menu { position: fixed; top: 56px; left: 0; right: 0; bottom: 0; background: #fff; z-index: 500; padding: 16px; overflow-y: auto; transform: translateX(-100%); transition: transform 0.3s ease; }
+            .mobile-menu.show { transform: translateX(0); }
+
+            /* 瑙︽帶鍙嬪ソ */
+            button, .tool-btn, .template-card, input[type="range"] { min-height: 44px; min-width: 44px; }
+            input, textarea, select { font-size: 16px !important; }
+
+            .resume-preview { width: 100% !important; transform: none !important; padding: 12px !important; }
+            #previewContainer { transform: none !important; width: 100% !important; }
+        }
+        @media (min-width: 1025px) {
+            .mobile-only { display: none !important; }
+            .sidebar-mobile { display: none !important; }
+        }
+
+        .mobile-tabs, .mobile-only { display: none; }
+        .hamburger { display: none; }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col overflow-hidden">
+    <!-- ========== Toast瀹瑰櫒 ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========== 鏂版墜寮曞 ========== -->
+    <div id="onboardingOverlay" class="onboarding-overlay" style="display:none;">
+        <div class="onboarding-backdrop"></div>
+        <div id="onboardingTooltip" class="onboarding-tooltip" style="top:50%;left:50%;transform:translate(-50%,-50%);">
+            <h3 id="onboardingTitle">娆㈣繋浣跨敤鏅哄饱宸ュ潑</h3>
+            <p id="onboardingDesc">鉁?AI绠€鍘嗕紭鍖栧姪鎵嬶紝甯綘浠庝竴寮犵櫧绾稿紑濮嬶紝蹇€熶骇鍑轰竴浠戒笓涓氥€佷釜鎬х殑绠€鍘?/p>
+            <div class="onboarding-steps" id="onboardingSteps">
+                <div class="onboarding-dot active"></div>
+                <div class="onboarding-dot"></div>
+                <div class="onboarding-dot"></div>
+                <div class="onboarding-dot"></div>
+            </div>
+            <div class="onboarding-btns">
+                <span class="btn-skip" id="btnSkipOnboarding">璺宠繃</span>
+                <button class="btn-next" id="btnNextOnboarding">寮€濮嬩綋楠?鈫?/button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 椤堕儴瀵艰埅 ========== -->
+    <header class="h-14 bg-white border-b border-slate-200 px-4 md:px-6 flex items-center justify-between shadow-sm z-20 flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <button class="hamburger mobile-only" id="btnHamburger" aria-label="鑿滃崟">鈽?/button>
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ff7b54] to-[#ffd32a] flex items-center justify-center shadow-lg">
+                <span class="text-white font-bold text-sm">鏅?/span>
+            </div>
+            <h1 class="font-bold text-base md:text-lg text-slate-800">鏅哄饱宸ュ潑</h1>
+            <span class="text-xs text-orange-600 bg-orange-50 px-2 md:px-2.5 py-1 rounded-full font-medium border border-orange-200 whitespace-nowrap">鉁?AI绠€鍘嗕紭鍖?/span>
+        </div>
+        <div class="flex items-center gap-2 md:gap-4">
+            <div class="items-center gap-2.5 hidden sm:flex">
+                <span class="text-xs text-slate-500">瀹屾暣搴?/span>
+                <div class="w-16 md:w-24 h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="progressBar" class="progress-bar h-full rounded-full" style="width:0%"></div>
+                </div>
+                <span id="progressText" class="text-xs font-bold text-orange-600 w-8 md:w-10">0%</span>
+            </div>
+            <span id="saveTip" class="save-tip text-xs text-green-600 bg-green-50 px-2 md:px-2.5 py-1 rounded border border-green-200 hidden sm:inline">宸蹭繚瀛?/span>
+            <button id="resetBtn" class="text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 px-2 md:px-3 py-1.5 rounded-lg transition">閲嶇疆</button>
+            <button id="btnRestartGuide" class="text-xs text-orange-500 hover:bg-orange-50 px-2 py-1.5 rounded-lg transition" title="閲嶆柊鎵撳紑寮曞">馃挕</button>
+        </div>
+    </header>
+
+    <!-- ========== 绉诲姩绔眽鍫¤彍鍗?========== -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mb-4">
+            <h3 class="font-semibold text-slate-800 text-sm mb-2">閫夋嫨妯℃澘</h3>
+            <div class="flex gap-3">
+                <div class="template-card p-3 rounded-xl selected flex-1" data-template="template-intern" style="min-width:120px;">
+                    <p class="text-sm text-center font-medium text-slate-700">馃搫 瀹炰範姹傝亴娆?/p>
+                    <p class="text-xs text-slate-400 text-center">鍗曟爮鍟嗗姟鐗?/p>
+                </div>
+                <div class="template-card p-3 rounded-xl flex-1" data-template="template-club" style="min-width:120px;">
+                    <p class="text-sm text-center font-medium text-slate-700">馃搵 绀惧洟绔為€夋</p>
+                    <p class="text-xs text-slate-400 text-center">鍙屾爮娓呮柊鐗?/p>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <button onclick="document.getElementById('btnDiagnosis').click()" class="tool-btn"><span>馃搳</span><span>绠€鍘嗚瘖鏂?/span></button>
+            <button onclick="document.getElementById('btnVersions').click()" class="tool-btn"><span>馃搧</span><span>鐗堟湰鍘嗗彶</span></button>
+            <button onclick="document.getElementById('btnTheme').click()" class="tool-btn"><span>馃帹</span><span>閰嶈壊涓婚</span></button>
+            <button onclick="document.getElementById('btnCoverLetter').click()" class="tool-btn"><span>馃摑</span><span>姹傝亴淇?/span></button>
+            <button onclick="document.getElementById('btnJDMatch').click()" class="tool-btn"><span>馃攳</span><span>JD鍖归厤</span></button>
+            <button onclick="document.getElementById('btnCopy').click()" class="tool-btn"><span>馃搵</span><span>澶嶅埗绠€鍘?/span></button>
+            <button onclick="document.getElementById('btnAPISettings').click()" class="tool-btn"><span>馃攽</span><span>API璁剧疆</span></button>
+            <button id="btnExportMobile" class="btn-primary text-white py-2 rounded-xl text-sm font-medium">瀵煎嚭PDF</button>
+        </div>
+        <div class="bg-gradient-to-br from-orange-50 to-yellow-50 p-3 rounded-xl border border-orange-100">
+            <p class="text-xs text-orange-700">馃挕 AI浼氬垎鏋愪綘鐨勭湡瀹炵粡鍘嗭紝鐢熸垚涓€у寲绠€鍘嗗唴瀹?/p>
+        </div>
+    </div>
+
+    <!-- ========== 涓讳綋 ========== -->
+    <div class="flex-1 flex overflow-hidden main-flex">
+        <!-- 宸︽爮 - 妗岄潰绔?-->
+        <aside class="w-56 bg-white border-r border-slate-200 flex flex-col shadow-sm desktop-only">
+            <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+                <div>
+                    <h3 class="font-semibold text-slate-800 text-sm mb-1">閫夋嫨妯℃澘</h3>
+                    <p class="text-xs text-slate-400">鍖归厤涓嶅悓鐨勬姇閫掑満鏅?/p>
+                </div>
+                <div class="template-card p-3 rounded-xl selected" data-template="template-intern">
+                    <div class="h-16 mb-2 rounded-lg border-2 border-dashed flex items-center justify-center text-slate-500 bg-gradient-to-br from-orange-50 to-yellow-50">
+                        <div class="text-center"><span class="text-xl block mb-1">馃搫</span><span class="text-xs font-medium">鍗曟爮鍟嗗姟鐗堝紡</span></div>
+                    </div>
+                    <p class="text-sm text-center font-medium text-slate-700">瀹炰範姹傝亴娆?/p>
+                    <p class="text-xs text-slate-400 text-center mt-0.5">閫傚悎鏍℃嫑/瀹炰範</p>
+                </div>
+                <div class="template-card p-3 rounded-xl" data-template="template-club">
+                    <div class="h-16 mb-2 rounded-lg border-2 border-dashed flex items-center justify-center text-slate-500 bg-gradient-to-br from-green-50 to-teal-50">
+                        <div class="text-center"><span class="text-xl block mb-1">馃搵</span><span class="text-xs font-medium">鍙屾爮娓呮柊鐗堝紡</span></div>
+                    </div>
+                    <p class="text-sm text-center font-medium text-slate-700">绀惧洟绔為€夋</p>
+                    <p class="text-xs text-slate-400 text-center mt-0.5">閫傚悎绀惧洟/瀛︾敓浼?/p>
+                </div>
+                <div class="bg-gradient-to-br from-orange-50 to-yellow-50 p-3 rounded-xl border border-orange-100">
+                    <p class="text-xs text-orange-700 font-medium mb-1">馃挕 鎻愮ず</p>
+                    <p class="text-xs text-orange-600 leading-relaxed">AI浼氬垎鏋愪綘鐨勭湡瀹炵粡鍘嗭紝鐢熸垚涓€у寲绠€鍘嗗唴瀹?/p>
+                </div>
+                <button id="exportPdf" class="btn-primary w-full text-white py-2.5 rounded-xl text-sm font-medium shadow-md">瀵煎嚭PDF绠€鍘?/button>
+            </div>
+            <div class="tool-panel">
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btnDiagnosis" class="tool-btn"><span class="text-base">馃搳</span><span>绠€鍘嗚瘖鏂?/span></button>
+                    <button id="btnVersions" class="tool-btn"><span class="text-base">馃搧</span><span>鐗堟湰鍘嗗彶</span></button>
+                    <button id="btnTheme" class="tool-btn"><span class="text-base">馃帹</span><span>閰嶈壊涓婚</span></button>
+                    <button id="btnCoverLetter" class="tool-btn"><span class="text-base">馃摑</span><span>姹傝亴淇?/span></button>
+                    <button id="btnJDMatch" class="tool-btn"><span class="text-base">馃攳</span><span>JD鍖归厤</span></button>
+                    <button id="btnCopy" class="tool-btn"><span class="text-base">馃搵</span><span>澶嶅埗绠€鍘?/span></button>
+                    <button id="btnAPISettings" class="tool-btn"><span class="text-base">馃攽</span><span>API璁剧疆</span></button>
+                    <button id="btnDiagnosisAI" class="tool-btn"><span class="text-base">馃</span><span>AI璇婃柇</span></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 绉诲姩绔疶ab瀵艰埅 -->
+        <div class="mobile-tabs" id="mobileTabs" style="display:none;">
+            <div class="mobile-tab active" data-tab="edit">鉁忥笍 缂栬緫</div>
+            <div class="mobile-tab" data-tab="preview">馃憗锔?棰勮</div>
+        </div>
+
+        <!-- 涓爮 -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-b from-slate-50 to-orange-50/20 center-full" id="editPanel">
+            <div class="max-w-2xl mx-auto space-y-4">
+                <div class="module-card bg-white p-4 md:p-5 rounded-2xl shadow-sm">
+                    <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2"><span class="text-lg">馃懁</span> 涓汉淇℃伅</h3>
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <div><label class="text-xs text-slate-500 mb-1.5 block">濮撳悕</label><input type="text" id="name" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-2.5 text-sm bg-white" placeholder="璇疯緭鍏ュ鍚?></div>
+                        <div><label class="text-xs text-slate-500 mb-1.5 block">姹傝亴鎰忓悜 / 绔為€夊矖浣?/label><input type="text" id="target" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-2.5 text-sm bg-white" placeholder="濡傦細鍓嶇寮€鍙戝疄涔犵敓"></div>
+                        <div><label class="text-xs text-slate-500 mb-1.5 block">鑱旂郴鐢佃瘽</label><input type="text" id="phone" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-2.5 text-sm bg-white" placeholder="璇疯緭鍏ユ墜鏈哄彿"></div>
+                        <div><label class="text-xs text-slate-500 mb-1.5 block">鐢靛瓙閭</label><input type="text" id="email" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-2.5 text-sm bg-white" placeholder="璇疯緭鍏ラ偖绠?></div>
+                    </div>
+                </div>
+                <div class="module-card bg-white p-4 md:p-5 rounded-2xl shadow-sm">
+                    <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2"><span class="text-lg">馃帗</span> 鏁欒偛鑳屾櫙</h3>
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <div><label class="text-xs text-slate-500 mb-1.5 block">瀛︽牎鍚嶇О</label><input type="text" id="school" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-2.5 text-sm bg-white" placeholder="璇疯緭鍏ュ鏍?></div>
+                        <div><label class="text-xs text-slate-500 mb-1.5 block">涓撲笟鍚嶇О</label><input type="text" id="major" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-2.5 text-sm bg-white" placeholder="璇疯緭鍏ヤ笓涓?></div>
+                        <div class="col-span-2"><label class="text-xs text-slate-500 mb-1.5 block">鍦ㄦ牎鏃堕棿 / GPA / 鑽ｈ獕</label><input type="text" id="eduExtra" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-2.5 text-sm bg-white" placeholder="濡傦細2022.09-2026.06 | GPA 3.8/4.0 | 鏍＄骇涓€绛夊瀛﹂噾"></div>
+                    </div>
+                </div>
+                <div class="module-card bg-white p-4 md:p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-slate-800 flex items-center gap-2"><span class="text-lg">馃捈</span> 瀹炶返缁忓巻</h3>
+                        <button id="addExperience" class="btn-secondary text-sm px-3 py-1.5 rounded-lg font-medium border border-slate-200">+ 娣诲姞</button>
+                    </div>
+                    <div id="experienceList" class="space-y-3"></div>
+                </div>
+                <div class="module-card bg-white p-4 md:p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-slate-800 flex items-center gap-2"><span class="text-lg">馃殌</span> 椤圭洰缁忓巻</h3>
+                        <button id="addProject" class="btn-secondary text-sm px-3 py-1.5 rounded-lg font-medium border border-slate-200">+ 娣诲姞</button>
+                    </div>
+                    <div id="projectList" class="space-y-3"></div>
+                </div>
+                <div class="module-card bg-white p-4 md:p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-slate-800 flex items-center gap-2"><span class="text-lg">馃弳</span> 鑾峰鑽ｈ獕</h3>
+                        <button id="addAward" class="btn-secondary text-sm px-3 py-1.5 rounded-lg font-medium border border-slate-200">+ 娣诲姞</button>
+                    </div>
+                    <div id="awardList" class="space-y-3"></div>
+                </div>
+                <div class="module-card bg-white p-4 md:p-5 rounded-2xl shadow-sm mb-6">
+                    <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2"><span class="text-lg">鈿?/span> 鎶€鑳界壒闀?/h3>
+                    <textarea id="skills" class="input-base w-full border border-slate-300 rounded-xl px-3 md:px-4 py-3 text-sm resize-none" rows="2" placeholder="濡傦細鐔熺粌浣跨敤Vue/React銆佽嫳璇叚绾э紙580鍒嗭級銆丳ython鏁版嵁鍒嗘瀽銆丄xure鍘熷瀷璁捐"></textarea>
+                </div>
+            </div>
+        </main>
+
+        <!-- 鍙虫爮 - 妗岄潰绔?-->
+        <aside id="asidePreview" class="w-[580px] bg-gradient-to-b from-slate-200 to-orange-100/30 p-4 md:p-5 overflow-y-auto desktop-only preview-aside">
+            <div class="w-full flex flex-col items-center">
+                <div class="preview-controls w-full mb-3">
+                    <label class="text-xs">棰勮缂╂斁锛?/label>
+                    <input type="range" id="zoomSlider" class="zoom-slider" min="50" max="100" value="75">
+                    <span id="zoomValue" class="zoom-value">75%</span>
+                </div>
+                <p class="text-center text-slate-500 mb-3 text-sm font-medium">馃搫 瀹炴椂棰勮 路 A4鏍囧噯</p>
+                <div id="previewContainer" class="transform-origin-top transition-transform duration-300" style="transform:scale(0.75);">
+                    <div id="resumePreview" class="resume-preview template-intern">
+                        <div class="resume-header">
+                            <h1 id="preview-name" class="name empty-placeholder">濮撳悕</h1>
+                            <p id="preview-target" class="target-line empty-placeholder">姹傝亴鎰忓悜 / 绔為€夊矖浣?/p>
+                            <div class="contact-line"><span id="preview-phone" class="empty-placeholder">鐢佃瘽</span><span>|</span><span id="preview-email" class="empty-placeholder">閭</span></div>
+                        </div>
+                        <div class="resume-body">
+                            <div class="resume-sidebar">
+                                <div class="sidebar-section"><h2 class="section-title">鑱旂郴鏂瑰紡</h2><p id="preview-phone-sidebar" class="small-text empty-placeholder" style="line-height:1.8">鐢佃瘽</p><p id="preview-email-sidebar" class="small-text empty-placeholder" style="line-height:1.8">閭</p></div>
+                                <div class="sidebar-section"><h2 class="section-title">鎶€鑳界壒闀?/h2><p id="preview-skills-sidebar" class="small-text empty-placeholder" style="line-height:1.8">璇峰～鍐欐妧鑳界壒闀?/p></div>
+                            </div>
+                            <div class="resume-main">
+                                <div class="resume-section"><h2 class="section-title">鏁欒偛鑳屾櫙</h2><p class="content-text"><span id="preview-school" class="content-bold empty-placeholder">瀛︽牎鍚嶇О</span><span class="float-right small-text empty-placeholder" id="preview-major">涓撲笟鍚嶇О</span></p><p id="preview-eduExtra" class="small-text mt-1 empty-placeholder">鍦ㄦ牎鏃堕棿 / GPA / 鑽ｈ獕</p></div>
+                                <div class="resume-section"><h2 class="section-title">瀹炶返缁忓巻</h2><div id="preview-experience"></div></div>
+                                <div class="resume-section"><h2 class="section-title">椤圭洰缁忓巻</h2><div id="preview-project"></div></div>
+                                <div class="resume-section"><h2 class="section-title">鑾峰鑽ｈ獕</h2><div id="preview-award"></div></div>
+                                <div class="resume-section skills-intern"><h2 class="section-title">鎶€鑳界壒闀?/h2><p id="preview-skills" class="content-text empty-placeholder">璇峰～鍐欐妧鑳界壒闀?/p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">馃搫 鏍囧噯A4 路 寤鸿1椤?/p>
+            </div>
+        </aside>
+
+        <!-- 绉诲姩绔瑙堥潰鏉?-->
+        <aside class="preview-aside bg-gradient-to-b from-slate-200 to-orange-100/30 p-3 md:p-5 overflow-y-auto" id="mobilePreviewPanel" style="display:none;">
+            <div class="w-full">
+                <p class="text-center text-slate-500 mb-2 text-sm font-medium">馃搫 绠€鍘嗛瑙?/p>
+                <div id="previewContainerMobile" style="transform:scale(0.6);transform-origin:top center;">
+                    <div id="resumePreviewMobile" class="resume-preview template-intern">
+                        <div class="resume-header">
+                            <h1 id="preview-name-m" class="name empty-placeholder">濮撳悕</h1>
+                            <p id="preview-target-m" class="target-line empty-placeholder">姹傝亴鎰忓悜</p>
+                            <div class="contact-line"><span id="preview-phone-m" class="empty-placeholder">鐢佃瘽</span><span>|</span><span id="preview-email-m" class="empty-placeholder">閭</span></div>
+                        </div>
+                        <div class="resume-body">
+                            <div class="resume-sidebar">
+                                <div class="sidebar-section"><h2 class="section-title">鑱旂郴鏂瑰紡</h2><p id="preview-phone-sidebar-m" class="small-text empty-placeholder">鐢佃瘽</p><p id="preview-email-sidebar-m" class="small-text empty-placeholder">閭</p></div>
+                                <div class="sidebar-section"><h2 class="section-title">鎶€鑳界壒闀?/h2><p id="preview-skills-sidebar-m" class="small-text empty-placeholder">鎶€鑳界壒闀?/p></div>
+                            </div>
+                            <div class="resume-main">
+                                <div class="resume-section"><h2 class="section-title">鏁欒偛鑳屾櫙</h2><p class="content-text"><span id="preview-school-m" class="content-bold empty-placeholder">瀛︽牎鍚嶇О</span><span class="float-right small-text" id="preview-major-m">涓撲笟鍚嶇О</span></p><p id="preview-eduExtra-m" class="small-text mt-1 empty-placeholder">鍦ㄦ牎鏃堕棿</p></div>
+                                <div class="resume-section"><h2 class="section-title">瀹炶返缁忓巻</h2><div id="preview-experience-m"></div></div>
+                                <div class="resume-section"><h2 class="section-title">椤圭洰缁忓巻</h2><div id="preview-project-m"></div></div>
+                                <div class="resume-section"><h2 class="section-title">鑾峰鑽ｈ獕</h2><div id="preview-award-m"></div></div>
+                                <div class="resume-section"><h2 class="section-title">鎶€鑳界壒闀?/h2><p id="preview-skills-m" class="content-text empty-placeholder">鎶€鑳界壒闀?/p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ========== 寮圭獥锛氱畝鍘嗚瘖鏂?========== -->
+    <div id="modalDiagnosis" class="modal-overlay">
+        <div class="modal-content w-[500px] max-h-[85vh]">
+            <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">馃搳 绠€鍘嗗仴搴峰害璇婃柇</h3><button class="modal-close text-slate-400 hover:text-slate-600 text-xl">&times;</button></div>
+            <div id="diagnosisContent"></div>
+        </div>
+    </div>
+
+    <!-- 寮圭獥锛欰I娣卞害璇婃柇 -->
+    <div id="modalDiagnosisAI" class="modal-overlay">
+        <div class="modal-content w-[550px] max-h-[85vh]">
+            <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">馃 AI娣卞害璇婃柇</h3><button class="modal-close text-slate-400 hover:text-slate-600 text-xl">&times;</button></div>
+            <div id="diagnosisAIContent"><p class="text-sm text-slate-500 text-center py-8">鐐瑰嚮涓嬫柟鎸夐挳锛孉I灏嗗垎鏋愪綘鐨勭畝鍘嗗苟缁欏嚭娣卞害浼樺寲寤鸿</p></div>
+            <button id="btnStartAIDiagnosis" class="btn-primary w-full text-white py-3 rounded-xl text-sm font-medium mt-4">鉁?寮€濮婣I璇婃柇</button>
+        </div>
+    </div>
+
+    <!-- 寮圭獥锛氱増鏈巻鍙?-->
+    <div id="modalVersions" class="modal-overlay">
+        <div class="modal-content w-[400px] max-h-[85vh]">
+            <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">馃搧 鐗堟湰鍘嗗彶</h3><button class="modal-close text-slate-400 hover:text-slate-600 text-xl">&times;</button></div>
+            <div id="versionList"></div>
+        </div>
+    </div>
+
+    <!-- 寮圭獥锛氶厤鑹蹭富棰?-->
+    <div id="modalTheme" class="modal-overlay">
+        <div class="modal-content w-[450px]">
+            <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">馃帹 閰嶈壊涓婚</h3><button class="modal-close text-slate-400 hover:text-slate-600 text-xl">&times;</button></div>
+            <div class="grid grid-cols-2 gap-4" id="themeList">
+                <div class="theme-option selected p-4 rounded-xl border-2 border-orange-400 cursor-pointer text-center" data-theme="coral"><div class="w-full h-12 rounded-lg bg-gradient-to-r from-[#ff7b54] to-[#ffd32a] mb-2"></div><p class="text-sm font-medium text-slate-700">鐝婄憵姗?/p></div>
+                <div class="theme-option p-4 rounded-xl border-2 border-slate-200 cursor-pointer text-center" data-theme="mint"><div class="w-full h-12 rounded-lg bg-gradient-to-r from-[#26de81] to-[#45aaf2] mb-2"></div><p class="text-sm font-medium text-slate-700">钖勮嵎缁?/p></div>
+                <div class="theme-option p-4 rounded-xl border-2 border-slate-200 cursor-pointer text-center" data-theme="lavender"><div class="w-full h-12 rounded-lg bg-gradient-to-r from-[#a55eea] to-[#d1a3ff] mb-2"></div><p class="text-sm font-medium text-slate-700">钖拌。鑽夌传</p></div>
+                <div class="theme-option p-4 rounded-xl border-2 border-slate-200 cursor-pointer text-center" data-theme="ocean"><div class="w-full h-12 rounded-lg bg-gradient-to-r from-[#3867d6] to-[#4b7bec] mb-2"></div><p class="text-sm font-medium text-slate-700">娣辨捣钃?/p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 寮圭獥锛氭眰鑱屼俊 -->
+    <div id="modalCoverLetter" class="modal-overlay">
+        <div class="modal-content w-[600px] max-h-[85vh]">
+            <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">馃摑 AI姹傝亴淇＄敓鎴?/h3><button class="modal-close text-slate-400 hover:text-slate-600 text-xl">&times;</button></div>
+            <div class="space-y-4">
+                <div><label class="text-sm text-slate-600 mb-2 block">鍏徃鍚嶇О</label><input type="text" id="coverCompany" class="input-base w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm" placeholder="濡傦細鑵捐绉戞妧"></div>
+                <div><label class="text-sm text-slate-600 mb-2 block">宀椾綅鍚嶇О</label><input type="text" id="coverPosition" class="input-base w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm" placeholder="濡傦細鍓嶇寮€鍙戝疄涔犵敓"></div>
+                <div><label class="text-sm text-slate-600 mb-2 block">姹傝亴淇″唴瀹癸紙AI鐢熸垚锛?/label><textarea id="coverContent" class="input-base w-full border border-slate-300 rounded-xl px-4 py-3 text-sm resize-none" rows="12" placeholder="鐐瑰嚮涓嬫柟鎸夐挳锛孉I浼氬熀浜庝綘鐨勭畝鍘嗙敓鎴愪釜鎬у寲姹傝亴淇?></textarea></div>
+                <div class="flex gap-3">
+                    <button id="btnGenerateCover" class="btn-ai flex-1 text-white py-2.5 rounded-xl text-sm font-medium">鉁?AI鐢熸垚姹傝亴淇?/button>
+                    <button id="btnCopyCover" class="btn-secondary flex-1 py-2.5 rounded-xl text-sm font-medium border border-slate-300">馃搵 澶嶅埗</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 寮圭獥锛欽D鏅鸿兘鍖归厤 -->
+    <div id="modalJDMatch" class="modal-overlay">
+        <div class="modal-content w-[650px] max-h-[85vh]">
+            <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">馃攳 宀椾綅JD鏅鸿兘鍖归厤</h3><button class="modal-close text-slate-400 hover:text-slate-600 text-xl">&times;</button></div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-sm text-slate-600 mb-2 block font-medium">宀椾綅鍚嶇О锛堝彲閫夛級</label>
+                    <input type="text" id="jdPosition" class="input-base w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm" placeholder="濡傦細鍓嶇寮€鍙戝疄涔犵敓">
+                </div>
+                <div>
+                    <label class="text-sm text-slate-600 mb-2 block font-medium">绮樿创宀椾綅JD鎻忚堪</label>
+                    <textarea id="jdContent" class="input-base w-full border border-slate-300 rounded-xl px-4 py-3 text-sm resize-none" rows="6" placeholder="灏嗘嫑鑱樼綉绔欎笂鐨勫矖浣嶈姹傜矘璐村埌杩欓噷锛孉I浼氬垎鏋愪綘鐨勭畝鍘嗗尮閰嶅害..."></textarea>
+                </div>
+                <button id="btnAnalyzeJD" class="btn-primary w-full text-white py-2.5 rounded-xl text-sm font-medium">馃攳 鍒嗘瀽鍖归厤搴?/button>
+                <div id="jdResult" class="space-y-3" style="display:none;">
+                    <div class="jd-match-card"><div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold text-slate-700">缁煎悎鍖归厤搴?/span><span id="jdScore" class="text-2xl font-bold text-orange-600">--%</span></div><div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden"><div id="jdScoreBar" class="h-full rounded-full progress-bar" style="width:0%"></div></div></div>
+                    <div class="jd-match-card"><h4 class="text-sm font-semibold text-green-600 mb-2">鉁?绠€鍘嗚鐩栫殑鍏抽敭璇?/h4><div id="jdMatchTags" class="flex flex-wrap gap-1"></div></div>
+                    <div class="jd-match-card"><h4 class="text-sm font-semibold text-yellow-600 mb-2">鈿狅笍 JD瑕佹眰浣嗙畝鍘嗘湭浣撶幇</h4><div id="jdMissTags" class="flex flex-wrap gap-1"></div></div>
+                    <div class="jd-match-card"><h4 class="text-sm font-semibold text-red-500 mb-2">鉂?鏄庢樉宸窛椤?/h4><div id="jdGapTags"></div></div>
+                    <div class="jd-match-card bg-orange-50 border-orange-200"><h4 class="text-sm font-semibold text-orange-700 mb-2">馃挕 AI浼樺寲寤鸿</h4><p id="jdAdvice" class="text-sm text-slate-600 leading-relaxed"></p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 寮圭獥锛欰PI璁剧疆 -->
+    <div id="modalAPISettings" class="modal-overlay">
+        <div class="modal-content w-[450px]">
+            <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">馃攽 MiniMax API 璁剧疆</h3><button class="modal-close text-slate-400 hover:text-slate-600 text-xl">&times;</button></div>
+            <div class="api-settings"><label class="text-sm text-slate-600 font-medium">API Key</label><input type="text" id="apiKey" placeholder="sk-xxxxxxxxxxxx"></div>
+            <div class="api-settings"><label class="text-sm text-slate-600 font-medium">Group ID</label><input type="text" id="groupId" placeholder="490504506605903880"></div>
+            <div class="api-status"><span class="dot" id="apiStatusDot"></span><span id="apiStatusText">鏈厤缃瓵PI</span></div>
+            <button id="btnSaveAPI" class="btn-primary w-full text-white py-2.5 rounded-xl text-sm font-medium mt-4">淇濆瓨璁剧疆</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== MiniMax API 閰嶇疆 ==========
+        const DEFAULT_API_KEY = 'sk-api-y0Y-BsQ9Tnce5Q16lE91q8mp3VXWr3RbFOKgNXqAzdOtnrpXZcqK-Uw9GVt56w7yWYK0yjAsaWXuKjcu1fAPRbz6KkIIRGVYsuWpRhvcW69eVby5hLTUmIs';
+        const DEFAULT_GROUP_ID = 'hhhh1';
+        let apiConfig = { apiKey: localStorage.getItem('minimax_api_key')||DEFAULT_API_KEY, groupId: localStorage.getItem('minimax_group_id')||DEFAULT_GROUP_ID };
+        function updateAPIStatus() {
+            const dot=document.getElementById('apiStatusDot'), text=document.getElementById('apiStatusText');
+            if(apiConfig.apiKey&&apiConfig.groupId){ dot.className='dot connected';text.textContent='API宸查厤缃?; }
+            else{ dot.className='dot';text.textContent='鏈厤缃瓵PI'; }
+        }
+
+        // API璋冪敤锛堝甫閲嶈瘯鍜岃秴鏃讹級
+        async function callMiniMaxAI(messages, model='abab6.5s', retries=2) {
+            if(!apiConfig.apiKey||!apiConfig.groupId) throw new Error('璇峰厛閰嶇疆API Key鍜孏roup ID');
+            let lastError;
+            for(let i=0;i<=retries;i++){
+                try{
+                    const controller=new AbortController();
+                    const timeout=setTimeout(()=>controller.abort(),30000);
+                    const response=await fetch(`https://api.minimax.chat/v1/text/chatcompletion_pro?GroupId=${apiConfig.groupId}`,{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiConfig.apiKey}`},
+                        body:JSON.stringify({model:model,messages:messages}),
+                        signal:controller.signal
+                    });
+                    clearTimeout(timeout);
+                    if(!response.ok){ const err=await response.json(); throw new Error(err.base_error?.message||'API璋冪敤澶辫触'); }
+                    const data=await response.json();
+                    return data.choices?.[0]?.messages?.[0]?.text||data.choices?.[0]?.message?.content||'';
+                }catch(e){
+                    lastError=e;
+                    if(i<retries){ await new Promise(r=>setTimeout(r,1000*(i+1))); }
+                }
+            }
+            throw lastError;
+        }
+
+        // ========== Toast 閫氱煡 ==========
+        function showToast(msg,type='info',duration=3000) {
+            const container=document.getElementById('toastContainer');
+            const icons={success:'鉁?,error:'鉂?,info:'鈩癸笍',warning:'鈿狅笍'};
+            const toast=document.createElement('div');
+            toast.className=`toast ${type}`;
+            toast.innerHTML=`<span>${icons[type]||''}</span><span>${msg}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(()=>toast.classList.add('show'));
+            setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=>toast.remove(),400); },duration);
+        }
+
+        // ========== 鏂版墜寮曞 ==========
+        const onboardingSteps=[
+            { title:'娆㈣繋浣跨敤鏅哄饱宸ュ潑', desc:'鉁?AI绠€鍘嗕紭鍖栧姪鎵嬶紝甯綘浠庨浂寮€濮嬪揩閫熶骇鍑轰竴浠戒笓涓氥€佷釜鎬х殑绠€鍘嗘枃妗?, target:null, pos:{top:'50%',left:'50%',transform:'translate(-50%,-50%)'} },
+            { title:'濉啓鍩烘湰淇℃伅', desc:'馃憟 鍦ㄥ乏渚х紪杈戝尯濉啓浣犵殑涓汉淇℃伅銆佹暀鑲茶儗鏅€佸疄璺电粡鍘嗙瓑銆侫I浼氳嚜鍔ㄥ府浣犱紭鍖栨枃瀛楄〃杈?, target:document.querySelector('.module-card'),pos:{top:'15%',right:'420px'} },
+            { title:'閫夋嫨妯℃澘涓嶢I鍔熻兘', desc:'馃帹 宸︿晶杈规爮鍙互鍒囨崲绠€鍘嗘ā鏉垮拰閰嶈壊涓婚銆傜偣鍑汇€孉I浼樺寲銆嶆寜閽嵆鍙AI甯綘娑﹁壊缁忓巻鎻忚堪', target:document.querySelector('.tool-panel'),pos:{bottom:'20px',left:'300px'} },
+            { title:'瀵煎嚭浣犵殑绠€鍘?, desc:'馃摛 缂栬緫瀹屾垚鍚庣偣鍑汇€屽鍑篜DF绠€鍘嗐€嶅嵆鍙笅杞紸4鏍囧噯绠€鍘嗐€侫I浼氫繚鎶や綘鐨勯殣绉侊紝鏁版嵁浠呭瓨鍌ㄥ湪鏈湴', target:document.getElementById('exportPdf'),pos:{bottom:'150px',left:'300px'} }
+        ];
+        let currentOnboardingStep=0;
+        function showOnboarding(step=0) {
+            currentOnboardingStep=step;
+            const overlay=document.getElementById('onboardingOverlay');
+            const tooltip=document.getElementById('onboardingTooltip');
+            const s=onboardingSteps[step];
+            document.getElementById('onboardingTitle').textContent=s.title;
+            document.getElementById('onboardingDesc').textContent=s.desc;
+            document.getElementById('btnNextOnboarding').textContent=step===onboardingSteps.length-1?'瀹屾垚 鉁?:'涓嬩竴姝?鈫?;
+            // Update dots
+            const dots=document.getElementById('onboardingSteps').querySelectorAll('.onboarding-dot');
+            dots.forEach((d,i)=>{ d.classList.toggle('active',i<=step); });
+            // Position tooltip
+            if(s.pos){ Object.assign(tooltip.style,s.pos); }
+            overlay.style.display='block';
+            if(step===0) showToast('娆㈣繋锛佽窡鎴戞潵蹇€熶簡瑙ｅ浣曚娇鐢?馃憢','info',4000);
+        }
+        function nextOnboarding() {
+            currentOnboardingStep++;
+            if(currentOnboardingStep>=onboardingSteps.length){ closeOnboarding();return; }
+            showOnboarding(currentOnboardingStep);
+        }
+        function closeOnboarding() {
+            document.getElementById('onboardingOverlay').style.display='none';
+            currentOnboardingStep=0;
+            localStorage.setItem('zhilv_onboarding_done','true');
+        }
+        document.getElementById('btnNextOnboarding').addEventListener('click',nextOnboarding);
+        document.getElementById('btnSkipOnboarding').addEventListener('click',closeOnboarding);
+        document.getElementById('btnRestartGuide').addEventListener('click',()=>showOnboarding(0));
+
+        // ========== 鏁版嵁绠＄悊 ==========
+        const defaultData={ name:'',target:'',phone:'',email:'',school:'',major:'',eduExtra:'',skills:'',template:'template-intern',theme:'coral', experience:[{id:Date.now(),title:'',content:''}], projects:[{id:Date.now()+1,title:'',content:''}], awards:[{id:Date.now()+2,title:'',content:''}] };
+        let resumeData=JSON.parse(localStorage.getItem('zhilv_resume_v7'))||JSON.parse(JSON.stringify(defaultData));
+        let versions=JSON.parse(localStorage.getItem('zhilv_versions_v7'))||[];
+        const $=id=>document.getElementById(id);
+
+        // 瀛樺偍瀹归噺妫€娴嬶紙Safari鍏煎锛?        function isStorageAvailable() {
+            try{ const x='__test__'; localStorage.setItem(x,x); localStorage.removeItem(x); return true; }
+            catch(e){ return false; }
+        }
+        function safeStringify(obj) {
+            try{ return JSON.stringify(obj); }
+            catch(e){ showToast('鏁版嵁淇濆瓨澶辫触锛氬唴瀹硅繃闀匡紝璇风簿绠€','warning'); return null; }
+        }
+
+        // ========== 涓婚 ==========
+        const themes={
+            coral:{primary:'#ff7b54',primaryLight:'#ffb26b',primaryDark:'#e55d3a',accent:'#ffd32a',success:'#26de81'},
+            mint:{primary:'#26de81',primaryLight:'#2ecc71',primaryDark:'#20bf6b',accent:'#45aaf2',success:'#20bf6b'},
+            lavender:{primary:'#a55eea',primaryLight:'#d1a3ff',primaryDark:'#8854d0',accent:'#fd79a8',success:'#a55eea'},
+            ocean:{primary:'#3867d6',primaryLight:'#4b7bec',primaryDark:'#2d3a5a',accent:'#ffa502',success:'#3867d6'}
+        };
+        function applyTheme(themeName) {
+            const t=themes[themeName]||themes.coral;
+            Object.entries(t).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k,v));
+            resumeData.theme=themeName; saveData();
+        }
+        function generateId(){return Date.now()+Math.random();}
+
+        // ========== 杩涘害鏉?==========
+        function updateProgress() {
+            let filled=0;
+            ['name','target','phone','email','school','major','eduExtra','skills'].forEach(f=>{if(resumeData[f]?.trim())filled++;});
+            const ve=resumeData.experience.filter(e=>e.title?.trim()&&e.content?.trim()).length;
+            const vp=resumeData.projects.filter(e=>e.title?.trim()&&e.content?.trim()).length;
+            const va=resumeData.awards.filter(e=>e.title?.trim()).length;
+            filled+=Math.min(ve,2)+Math.min(vp,1)+Math.min(va,1);
+            const pct=Math.round((filled/11)*100);
+            $('progressBar').style.width=pct+'%';
+            $('progressText').textContent=pct+'%';
+        }
+
+        // ========== 淇濆瓨锛堥槻鎶栵級 ==========
+        const doSave=(()=>{let t;return()=>{clearTimeout(t);t=setTimeout(()=>{
+            const str=safeStringify(resumeData); if(!str)return;
+            try{localStorage.setItem('zhilv_resume_v7',str);}
+            catch(e){if(!isStorageAvailable()){showToast('瀛樺偍绌洪棿涓嶈冻锛岃娓呯悊鏃х増鏈暟鎹?,'warning');versions=[];localStorage.setItem('zhilv_versions_v7','[]');try{localStorage.setItem('zhilv_resume_v7',str);}catch(e2){}}}
+            const snap={...resumeData,savedAt:new Date().toISOString()};versions.unshift(snap);
+            if(versions.length>10)versions=versions.slice(0,10);
+            try{localStorage.setItem('zhilv_versions_v7',JSON.stringify(versions));}catch(e){}
+            showSaveTip();
+        },400);};})();
+        function showSaveTip(){$('saveTip').classList.add('show');clearTimeout($('saveTip')._t);$('saveTip')._t=setTimeout(()=>$('saveTip').classList.remove('show'),1500);}
+
+        // ========== AI娑﹁壊 ==========
+        async function smartPolishWithAI(content,title,type) {
+            const isIntern=resumeData.template==='template-intern';
+            const typeName=type==='experience'?'瀹炶返缁忓巻':'椤圭洰缁忓巻';
+            const targetJob=resumeData.target||'鐩稿叧宀椾綅';
+            const prompt=`浣犳槸涓€浣嶄笓涓氱殑绠€鍘嗘挵鍐欓【闂€傝甯垜浼樺寲浠ヤ笅${typeName}鎻忚堪銆?
+**鎴戠殑缁忓巻鑳屾櫙锛?*
+- ${typeName}鏍囬锛?{title}
+- 鍘熷鎻忚堪锛?{content}
+- 姹傝亴鏂瑰悜锛?{targetJob}
+- 绠€鍘嗛鏍硷細${isIntern?'涓撲笟鍟嗗姟椋庢牸锛岄€傚悎姹傝亴闈㈣瘯':'娓呮柊娲诲姏椋庢牸锛岄€傚悎绀惧洟绔為€?}
+
+**瑕佹眰锛?*
+1. 淇濈暀鍘熷缁忓巻涓殑鍏抽敭淇℃伅锛堝叿浣撴暟瀛椼€佸叕鍙?缁勭粐鍚嶇О銆佷娇鐢ㄧ殑宸ュ叿/鎶€鑳界瓑锛?2. 浼樺寲琛ㄨ揪鏂瑰紡锛屼娇鍏舵洿涓撲笟銆佺畝娲併€佹湁璇存湇鍔?3. 浣跨敤绠€鍘嗚鑼冪敤璇紝濡?璐熻矗"銆?鍙備笌"銆?瀹屾垚"绛?4. 姣忔潯鎻忚堪鎺у埗鍦?0-50瀛楀乏鍙?5. 濡傛灉鏄眰鑱岄鏍硷紝瑕佺獊鍑烘垚鏋滃拰浠峰€硷紱濡傛灉鏄ぞ鍥㈤鏍硷紝瑕佺獊鍑轰釜浜烘垚闀垮拰鑳藉姏
+6. 绂佹缂栭€犵粡鍘嗭紝鎵€鏈夋弿杩板繀椤诲熀浜庡師濮嬪唴瀹?7. 鐩存帴杈撳嚭浼樺寲鍚庣殑鍐呭锛屼笉瑕佽В閲婏紝鐢?鈥?浣滀负鍒楄〃绗﹀彿
+
+璇风洿鎺ヨ緭鍑轰紭鍖栧悗鐨勬弿杩帮細`;
+            const result=await callMiniMaxAI([{role:'user',content:prompt}]);
+            return result.trim();
+        }
+
+        // ========== AI姹傝亴淇?==========
+        async function generateCoverLetterAI(company,position) {
+            const name=resumeData.name||'鍊欓€変汉',school=resumeData.school||'',major=resumeData.major||'',skills=resumeData.skills||'';
+            const target=resumeData.target||position||'';
+            const exps=resumeData.experience.filter(e=>e.title?.trim());
+            const pros=resumeData.projects.filter(p=>p.title?.trim());
+            const prompt=`浣犳槸涓€浣嶄笓涓氱殑姹傝亴淇℃挵鍐欓【闂€傝甯垜鍐欎竴灏侀拡瀵规€у己銆佷釜鎬у寲銆佹湁鎰熸煋鍔涚殑姹傝亴淇°€?
+**鍊欓€変汉鍩烘湰淇℃伅锛?*
+- 濮撳悕锛?{name} | 瀛︽牎锛?{school} | 涓撲笟锛?{major}
+- 姹傝亴宀椾綅锛?{target||position||'寰呭畾'} | 鐩爣鍏徃锛?{company||'寰呭畾'}
+- 鎶€鑳界壒闀匡細${skills||'鏆傛棤'}
+
+**瀹炶返缁忓巻锛?* ${exps.slice(0,3).map((e,i)=>`${i+1}.${e.title}锛?{e.content}`).join('锛?)}
+**椤圭洰缁忓巻锛?* ${pros.slice(0,2).map((p,i)=>`${i+1}.${p.title}锛?{p.content}`).join('锛?)}
+
+**瑕佹眰锛?* 寮€澶寸О鍛?灏婃暚鐨勬嫑鑱樹富绠?HR"锛涗富浣撶粨鍚堢粡鍘嗙獊鍑哄尮閰嶅害锛涚粨灏炬湡寰呴潰璇曪紱钀芥鐢ㄧ湡瀹炲鍚嶅拰褰撳ぉ鏃ユ湡锛?00瀛椾互鍐咃紱鐩存帴杈撳嚭姝ｆ枃銆?璇风洿鎺ヨ緭鍑烘眰鑱屼俊锛歚;
+            const result=await callMiniMaxAI([{role:'user',content:prompt}]);
+            return result.trim();
+        }
+
+        // ========== 绠€鍘嗚瘖鏂?==========
+        function diagnoseResume() {
+            const issues=[],suggestions=[],keywords=[];
+            let score=0;
+            if(!resumeData.name)issues.push('缂哄皯濮撳悕');else score+=10;
+            if(!resumeData.target)issues.push('缂哄皯姹傝亴鎰忓悜');else score+=10;
+            if(!resumeData.phone&&!resumeData.email)issues.push('缂哄皯鑱旂郴鏂瑰紡');else score+=10;
+            if(!resumeData.school)issues.push('缂哄皯鏁欒偛鑳屾櫙');else score+=15;
+            const ec=resumeData.experience.filter(e=>e.title?.trim()&&e.content?.trim()).length;
+            if(ec===0){issues.push('缂哄皯瀹炶返缁忓巻');suggestions.push('娣诲姞1-2娈靛疄涔犳垨宸ヤ綔缁忓巻');}
+            else if(ec<2){suggestions.push('寤鸿鑷冲皯娣诲姞2娈垫湁浠峰€肩殑缁忓巻');score+=5;}
+            else score+=20;
+            const pc=resumeData.projects.filter(p=>p.title?.trim()&&p.content?.trim()).length;
+            if(pc===0)suggestions.push('寤鸿娣诲姞椤圭洰缁忓巻');else score+=15;
+            if(!resumeData.skills?.trim())issues.push('缂哄皯鎶€鑳界壒闀?);else score+=10;
+            const all=resumeData.skills+' '+resumeData.experience.map(e=>e.content).join(' ');
+            ['鍥㈤槦','鍗忎綔','娌熼€?,'棰嗗','缁勭粐','绠＄悊','鍒嗘瀽','鍒涙柊','璐熻矗'].forEach(k=>{if(all.includes(k))keywords.push(k);});
+            if(keywords.length<3)suggestions.push('寤鸿澧炲姞杞妧鑳藉叧閿瘝');
+            return {score:Math.min(score,100),issues,suggestions,keywords};
+        }
+        function showDiagnosis() {
+            const{score,issues,suggestions,keywords}=diagnoseResume();
+            const color=score>=80?'green':score>=60?'orange':'red';
+            const label=score>=80?'浼樼':score>=60?'鑹ソ':'闇€瀹屽杽';
+            let html=`<div class="flex items-center gap-5 mb-5"><div class="score-circle" style="--score:${score}%"><div class="score-circle-inner">${score}</div></div><div><p class="text-lg font-bold" style="color:${color==='green'?'#26de81':color==='orange'?'#ffa502':'#ff4757'}">${label}</p><p class="text-sm text-slate-500">绠€鍘嗗仴搴峰害寰楀垎</p></div></div>`;
+            if(issues.length>0){html+=`<div class="mb-4"><p class="text-sm font-semibold text-red-500 mb-2">鈿狅笍 闇€瑕佸畬鍠?/p><ul class="text-sm text-slate-600 space-y-1">${issues.map(i=>`<li>鈥?${i}</li>`).join('')}</ul></div>`;}
+            if(keywords.length>0){html+=`<div class="mb-4"><p class="text-sm font-semibold text-green-500 mb-2">鉁?宸叉湁鍏抽敭璇?/p><div class="flex flex-wrap gap-1">${keywords.map(k=>`<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">${k}</span>`).join('')}</div></div>`;}
+            if(suggestions.length>0){html+=`<div><p class="text-sm font-semibold text-blue-500 mb-2">馃挕 浼樺寲寤鸿</p><ul class="text-sm text-slate-600 space-y-1">${suggestions.map(s=>`<li>鈥?${s}</li>`).join('')}</ul></div>`;}
+            $('diagnosisContent').innerHTML=html;
+            showModal('modalDiagnosis');
+        }
+
+        // ========== AI娣卞害璇婃柇 ==========
+        async function startAIDiagnosis() {
+            if(!apiConfig.apiKey||!apiConfig.groupId){showToast('璇峰厛閰嶇疆API Key','warning');showAPISettings();return;}
+            const btn=$('btnStartAIDiagnosis');btn.textContent='鉁?AI鍒嗘瀽涓?..';btn.disabled=true;
+            const content=`濮撳悕锛?{resumeData.name}
+姹傝亴鎰忓悜锛?{resumeData.target}
+瀛︽牎锛?{resumeData.school} | 涓撲笟锛?{resumeData.major}
+鎶€鑳斤細${resumeData.skills}
+瀹炶返缁忓巻锛?{resumeData.experience.filter(e=>e.title).map(e=>e.title+': '+e.content).join('锛?)}
+椤圭洰缁忓巻锛?{resumeData.projects.filter(p=>p.title).map(p=>p.title+': '+p.content).join('锛?)}
+鑾峰锛?{resumeData.awards.filter(a=>a.title).map(a=>a.title).join('銆?)}`;
+            const prompt=`浣犳槸涓€浣嶈祫娣盚R绠€鍘嗚瘎瀹′笓瀹躲€傝鍒嗘瀽浠ヤ笅绠€鍘嗗苟缁欏嚭娣卞害璇婃柇锛?
+${content}
+
+璇蜂粠浠ヤ笅缁村害鍒嗘瀽锛堢敤绠€娲佺殑鍒楄〃鏍煎紡锛夛細
+1. 鏁翠綋璇勫垎锛?-100鍒嗭級
+2. 鍚勬ā鍧楄瘎鍒嗭紙涓汉淇℃伅/鏁欒偛/缁忓巻/椤圭洰/鎶€鑳斤紝姣忛」0-100锛?3. 3涓富瑕佷紭鐐?4. 3涓渶闇€瑕佹敼杩涚殑鍦版柟
+5. 閽堝鐩爣宀椾綅"${resumeData.target||'鏈寚瀹?}"鐨勫叿浣撲紭鍖栧缓璁?6. 绠€鍘嗗叧閿瘝瑕嗙洊鎯呭喌
+
+璇风洿鎺ヨ緭鍑鸿瘖鏂粨鏋滐紝浣跨敤娓呮櫚鐨勫垎娈靛拰emoji鏍囪锛歚;
+            try{
+                const result=await callMiniMaxAI([{role:'user',content:prompt}]);
+                $('diagnosisAIContent').innerHTML=`<div class="text-sm text-slate-700 leading-relaxed whitespace-pre-line">${result}</div>`;
+            }catch(e){
+                $('diagnosisAIContent').innerHTML=`<p class="text-sm text-red-500">璇婃柇澶辫触锛?{e.message}銆傝妫€鏌PI璁剧疆鍚庨噸璇曘€?/p>`;
+            }finally{
+                btn.textContent='馃攧 閲嶆柊璇婃柇';btn.disabled=false;
+            }
+        }
+
+        // ========== JD鏅鸿兘鍖归厤 ==========
+        async function analyzeJD() {
+            const jdText=$('jdContent').value.trim();
+            if(!jdText){showToast('璇峰厛绮樿创宀椾綅JD鎻忚堪','warning');return;}
+            if(!apiConfig.apiKey||!apiConfig.groupId){showToast('璇峰厛閰嶇疆API Key','warning');showAPISettings();return;}
+            const btn=$('btnAnalyzeJD');btn.innerHTML='<span class="loading-spinner"></span> 鍒嗘瀽涓?..';btn.disabled=true;
+            const resumeText=`濮撳悕锛?{resumeData.name} | 姹傝亴鎰忓悜锛?{resumeData.target}
+瀛︽牎锛?{resumeData.school} | 涓撲笟锛?{resumeData.major} | ${resumeData.eduExtra}
+鎶€鑳斤細${resumeData.skills}
+缁忓巻锛?{resumeData.experience.filter(e=>e.title).map(e=>e.title+': '+e.content).join('锛?)}
+椤圭洰锛?{resumeData.projects.filter(p=>p.title).map(p=>p.title+': '+p.content).join('锛?)}
+鑾峰锛?{resumeData.awards.filter(a=>a.title).map(a=>a.title).join('銆?)}`;
+            const prompt=`浣犳槸涓撲笟鐨勬嫑鑱橀【闂€傝瀵规瘮绠€鍘嗕笌JD鐨勫尮閰嶅害銆?
+**宀椾綅JD锛?* ${jdText}
+**鍊欓€変汉绠€鍘嗭細** ${resumeText}
+
+璇风敤JSON鏍煎紡杈撳嚭锛堜笉瑕乵arkdown鏍囪锛屽彧杈撳嚭绾疛SON锛夛細
+{
+  "score": 鏁板瓧0-100,
+  "matchTags": ["鍖归厤鐨勫叧閿瘝鍒楄〃"],
+  "missTags": ["JD瑕佹眰浣嗙畝鍘嗘湭浣撶幇鐨勫叧閿瘝"],
+  "gapTags": ["绠€鍘嗘槑鏄句笉瓒崇殑宸窛椤?],
+  "advice": "3-5鏉″叿浣撶殑绠€鍘嗕紭鍖栧缓璁紝甯姪鎻愬崌鍖归厤搴?
+}`;
+            try{
+                const raw=await callMiniMaxAI([{role:'user',content:prompt}]);
+                let data; try{ data=JSON.parse(raw.replace(/```json|```/g,'').trim()); }catch(e){ const m=raw.match(/\{[\s\S]*\}/); if(m)data=JSON.parse(m[0]); else throw new Error('AI杩斿洖鏍煎紡寮傚父'); }
+                $('jdScore').textContent=data.score+'%';
+                $('jdScoreBar').style.width=data.score+'%';
+                $('jdMatchTags').innerHTML=(data.matchTags||[]).map(t=>`<span class="jd-tag match">${t}</span>`).join('')||'<span class="text-xs text-slate-400">鏆傛棤</span>';
+                $('jdMissTags').innerHTML=(data.missTags||[]).map(t=>`<span class="jd-tag miss">${t}</span>`).join('')||'<span class="text-xs text-slate-400">鏆傛棤</span>';
+                $('jdGapTags').innerHTML=(data.gapTags||[]).map(t=>`<span class="jd-tag gap">${t}</span>`).join('')||'<span class="text-xs text-slate-400">鏆傛棤</span>';
+                $('jdAdvice').textContent=data.advice||'AI鏆傛湭鐢熸垚寤鸿锛岃閲嶈瘯';
+                $('jdResult').style.display='block';
+                showToast(`鍖归厤搴﹀垎鏋愬畬鎴愶細${data.score}%`,'success');
+            }catch(e){
+                showToast('鍒嗘瀽澶辫触锛?+e.message,'error');
+            }finally{
+                btn.textContent='馃攳 鍒嗘瀽鍖归厤搴?;btn.disabled=false;
+            }
+        }
+
+        // ========== 鐗堟湰鍘嗗彶 ==========
+        function showVersions() {
+            if(versions.length===0){$('versionList').innerHTML='<p class="text-sm text-slate-400 text-center py-8">鏆傛棤鐗堟湰璁板綍</p>';}
+            else{
+                $('versionList').innerHTML=versions.map((v,i)=>`<div class="version-item cursor-pointer p-3 rounded-xl mb-2 ${i===0?'bg-orange-50 border border-orange-200':''}" data-index="${i}"><p class="text-sm font-medium text-slate-700">鐗堟湰 ${versions.length-i}</p><p class="text-xs text-slate-400">${new Date(v.savedAt).toLocaleString('zh-CN')}</p><p class="text-xs text-slate-500 mt-1">${v.name||'鏈懡鍚?} 路 ${v.target||'鏈～鍐欏矖浣?}</p></div>`).join('');
+                $('versionList').querySelectorAll('.version-item').forEach(item=>{
+                    item.addEventListener('click',()=>{
+                        const idx=parseInt(item.dataset.index);
+                        if(confirm('纭畾鎭㈠鍒扮増鏈?+(versions.length-idx)+'锛?)){ resumeData={...versions[idx]}; saveData(); renderAll(); closeModal('modalVersions');showToast('宸叉仮澶嶅巻鍙茬増鏈?,'success'); }
+                    });
+                });
+            }
+            showModal('modalVersions');
+        }
+
+        // ========== 鍔ㄦ€佸垪琛ㄦ覆鏌?==========
+        function renderList(type,listEl,previewEl) {
+            listEl.innerHTML='';
+            resumeData[type].forEach(item=>{
+                const div=document.createElement('div');
+                div.className='exp-item p-4 rounded-xl';div.dataset.id=item.id;
+                div.innerHTML=`
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="text" class="item-title flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white" placeholder="${type==='awards'?'濡傦細2024骞?鍥藉濂栧閲?:'鏍囬锛屽锛歑X鍏徃杩愯惀瀹炰範鐢?}" value="${item.title||''}" data-id="${item.id}" data-type="${type}">
+                        <button class="delete-btn px-2.5 py-1 rounded-lg text-xs" data-id="${item.id}" data-type="${type}">鍒犻櫎</button>
+                    </div>
+                    <textarea class="item-content w-full border border-slate-300 rounded-xl px-3 py-2 text-sm resize-none bg-white" rows="3" placeholder="${type==='awards'?'鑾峰鏃堕棿銆佺瓑绾х瓑':'璇︾粏鎻忚堪缁忓巻鍐呭...'}" data-id="${item.id}" data-type="${type}">${item.content||''}</textarea>
+                    ${type!=='awards'?`<button class="ai-btn btn-ai text-white text-xs px-3 py-1.5 rounded-lg mt-2 font-medium" data-id="${item.id}" data-type="${type}">鉁?AI浼樺寲</button>`:''}
+                `;
+                listEl.appendChild(div);
+            });
+            renderListPreview(type,previewEl);bindListEvents(type,listEl);
+        }
+        function renderListPreview(type,previewEl) {
+            previewEl.innerHTML='';
+            const items=resumeData[type];
+            if(!items.some(i=>i.title?.trim())){ const labels={experience:'瀹炶返缁忓巻',projects:'椤圭洰缁忓巻',awards:'鑾峰鑽ｈ獕'}; previewEl.innerHTML=`<p class="text-sm empty-placeholder">璇锋坊鍔?{labels[type]}</p>`;return;}
+            items.forEach(item=>{if(!item.title?.trim())return;const div=document.createElement('div');div.className='content-text';div.innerHTML=`<span class="content-bold">${item.title}</span>${item.content?`<br><span style="color:#555">${item.content}</span>`:''}`;previewEl.appendChild(div);});
+        }
+        function bindListEvents(type,listEl) {
+            listEl.querySelectorAll('.item-title,.item-content').forEach(el=>{
+                el.addEventListener('input',e=>{
+                    const id=parseFloat(e.target.dataset.id);
+                    const field=e.target.classList.contains('item-title')?'title':'content';
+                    const item=resumeData[type].find(i=>i.id===id);
+                    if(item){item[field]=e.target.value;saveData();updateProgress();}
+                    const map={experience:$('preview-experience'),projects:$('preview-project'),awards:$('preview-award')};
+                    renderListPreview(type,map[type]);
+                    // Update mobile preview too
+                    const mapM={experience:$('preview-experience-m'),projects:$('preview-project-m'),awards:$('preview-award-m')};
+                    if(mapM[type])renderListPreview(type,mapM[type]);
+                });
+            });
+            listEl.querySelectorAll('.delete-btn').forEach(btn=>{
+                btn.addEventListener('click',()=>{
+                    const id=parseFloat(btn.dataset.id);
+                    if(resumeData[type].length<=1){showToast('鑷冲皯淇濈暀涓€鏉¤褰?,'warning');return;}
+                    if(confirm('纭畾鍒犻櫎锛?)){
+                        resumeData[type]=resumeData[type].filter(i=>i.id!==id);saveData();
+                        const map={experience:['experienceList','preview-experience'],projects:['projectList','preview-project'],awards:['awardList','preview-award']};
+                        renderList(type,$(map[type][0]),$(map[type][1]));updateProgress();
+                    }
+                });
+            });
+            listEl.querySelectorAll('.ai-btn').forEach(btn=>{
+                btn.addEventListener('click',async()=>{
+                    const id=parseFloat(btn.dataset.id);
+                    const item=resumeData[type].find(i=>i.id===id);
+                    if(!item?.title?.trim()||!item?.content?.trim()){showToast('璇峰厛濉啓鏍囬鍜屽唴瀹?,'warning');return;}
+                    if(!apiConfig.apiKey||!apiConfig.groupId){showToast('璇峰厛閰嶇疆API Key','warning');showAPISettings();return;}
+                    btn.textContent='鉁?AI浼樺寲涓?..';btn.disabled=true;
+                    try{
+                        const optimized=await smartPolishWithAI(item.content,item.title,type);
+                        item.content=optimized;saveData();
+                        const map={experience:['experienceList','preview-experience'],projects:['projectList','preview-project']};
+                        renderList(type,$(map[type][0]),$(map[type][1]));updateProgress();
+                        showToast('AI娑﹁壊瀹屾垚锛?,'success');
+                    }catch(e){
+                        showToast('AI浼樺寲澶辫触: '+e.message,'error');
+                    }finally{btn.textContent='鉁?AI浼樺寲';btn.disabled=false;}
+                });
+            });
+        }
+
+        // ========== 鍏ㄩ噺娓叉煋 ==========
+        function renderAll() {
+            ['name','target','phone','email','school','major','eduExtra','skills'].forEach(f=>{
+                const input=$(f); if(input)input.value=resumeData[f]||'';
+                const preview=$(`preview-${f}`); const sidebar=$(`preview-${f}-sidebar`);
+                const text=resumeData[f]||getPlaceholder(f);
+                if(preview){preview.textContent=text;preview.classList.toggle('empty-placeholder',!resumeData[f]);}
+                if(sidebar){sidebar.textContent=text;sidebar.classList.toggle('empty-placeholder',!resumeData[f]);}
+                // Mobile preview
+                const pm=$(`preview-${f}-m`); const sm=$(`preview-${f}-sidebar-m`);
+                if(pm){pm.textContent=text;pm.classList.toggle('empty-placeholder',!resumeData[f]);}
+                if(sm){sm.textContent=text;sm.classList.toggle('empty-placeholder',!resumeData[f]);}
+            });
+            renderList('experience',$('experienceList'),$('preview-experience'));
+            renderList('projects',$('projectList'),$('preview-project'));
+            renderList('awards',$('awardList'),$('preview-award'));
+            switchTemplate(resumeData.template,false);
+            applyTheme(resumeData.theme||'coral');
+            updateProgress();
+        }
+        function getPlaceholder(f){const m={name:'濮撳悕',target:'姹傝亴鎰忓悜 / 绔為€夊矖浣?,phone:'鐢佃瘽',email:'閭',school:'瀛︽牎鍚嶇О',major:'涓撲笟鍚嶇О',eduExtra:'鍦ㄦ牎鏃堕棿 / GPA / 鑽ｈ獕',skills:'璇峰～鍐欐妧鑳界壒闀?};return m[f]||'';}
+        function switchTemplate(tpl,save=true){
+            $('resumePreview').className=`resume-preview ${tpl}`;
+            document.querySelectorAll('.template-card').forEach(c=>c.classList.remove('selected'));
+            const active=document.querySelector(`[data-template="${tpl}"]`);
+            if(active)active.classList.add('selected');
+            if(save){resumeData.template=tpl;doSave();}
+        }
+
+        // ========== 寮圭獥 ==========
+        function showModal(id){$(id).classList.add('show');}
+        function closeModal(id){$(id).classList.remove('show');}
+        document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+        document.querySelectorAll('.modal-close').forEach(b=>b.addEventListener('click',()=>b.closest('.modal-overlay').classList.remove('show')));
+
+        // ========== 浜嬩欢缁戝畾 ==========
+        document.querySelectorAll('.template-card').forEach(card=>card.addEventListener('click',()=>switchTemplate(card.dataset.template)));
+        $('addExperience')?.addEventListener('click',()=>{resumeData.experience.push({id:generateId(),title:'',content:''});doSave();renderList('experience',$('experienceList'),$('preview-experience'));updateProgress();});
+        $('addProject')?.addEventListener('click',()=>{resumeData.projects.push({id:generateId(),title:'',content:''});doSave();renderList('projects',$('projectList'),$('preview-project'));updateProgress();});
+        $('addAward')?.addEventListener('click',()=>{resumeData.awards.push({id:generateId(),title:'',content:''});doSave();renderList('awards',$('awardList'),$('preview-award'));updateProgress();});
+        ['name','target','phone','email','school','major','eduExtra','skills'].forEach(f=>{
+            $(f)?.addEventListener('input',e=>{
+                resumeData[f]=e.target.value;saveData();
+                const preview=$(`preview-${f}`); const sidebar=$(`preview-${f}-sidebar`);
+                const text=e.target.value||getPlaceholder(f);
+                if(preview){preview.textContent=text;preview.classList.toggle('empty-placeholder',!e.target.value);}
+                if(sidebar){sidebar.textContent=text;sidebar.classList.toggle('empty-placeholder',!e.target.value);}
+                // Mobile
+                const pm=$(`preview-${f}-m`);const sm=$(`preview-${f}-sidebar-m`);
+                if(pm){pm.textContent=text;pm.classList.toggle('empty-placeholder',!e.target.value);}
+                if(sm){sm.textContent=text;sm.classList.toggle('empty-placeholder',!e.target.value);}
+                updateProgress();
+            });
+        });
+        $('resetBtn')?.addEventListener('click',()=>{if(confirm('纭畾閲嶇疆鎵€鏈夊唴瀹癸紵')){resumeData=JSON.parse(JSON.stringify(defaultData));localStorage.removeItem('zhilv_resume_v7');versions=[];localStorage.removeItem('zhilv_versions_v7');renderAll();showToast('宸查噸缃?,'info');}});
+        $('exportPdf')?.addEventListener('click',()=>{
+            const btn=$('exportPdf');btn.textContent='鐢熸垚涓?..';btn.disabled=true;
+            const el=$('resumePreview');html2pdf().set({margin:0,filename:`${resumeData.name||'涓汉'}绠€鍘?pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{btn.textContent='瀵煎嚭PDF绠€鍘?;btn.disabled=false;showToast('PDF瀵煎嚭鎴愬姛锛?,'success');}).catch(()=>{btn.textContent='瀵煎嚭PDF绠€鍘?;btn.disabled=false;showToast('PDF瀵煎嚭澶辫触锛岃閲嶈瘯','error');});
+        });
+        $('btnDiagnosis')?.addEventListener('click',showDiagnosis);
+        $('btnDiagnosisAI')?.addEventListener('click',()=>showModal('modalDiagnosisAI'));
+        $('btnStartAIDiagnosis')?.addEventListener('click',startAIDiagnosis);
+        $('btnVersions')?.addEventListener('click',showVersions);
+        $('btnTheme')?.addEventListener('click',()=>showModal('modalTheme'));
+        $('btnCoverLetter')?.addEventListener('click',()=>showModal('modalCoverLetter'));
+        $('btnJDMatch')?.addEventListener('click',()=>showModal('modalJDMatch'));
+        $('btnAnalyzeJD')?.addEventListener('click',analyzeJD);
+        $('btnAPISettings')?.addEventListener('click',showAPISettings);
+
+        // 姹傝亴淇?        $('btnGenerateCover')?.addEventListener('click',async()=>{
+            const btn=$('btnGenerateCover');const company=$('coverCompany').value,position=$('coverPosition').value||resumeData.target;
+            if(!company){showToast('璇峰～鍐欏叕鍙稿悕绉?,'warning');return;}
+            if(!apiConfig.apiKey||!apiConfig.groupId){showToast('璇峰厛閰嶇疆API Key','warning');showAPISettings();return;}
+            btn.textContent='鉁?AI鐢熸垚涓?..';btn.disabled=true;
+            try{const content=await generateCoverLetterAI(company,position);$('coverContent').value=content;showToast('姹傝亴淇＄敓鎴愭垚鍔燂紒','success');}
+            catch(e){showToast('鐢熸垚澶辫触: '+e.message,'error');}
+            finally{btn.textContent='鉁?AI鐢熸垚姹傝亴淇?;btn.disabled=false;}
+        });
+        $('btnCopyCover')?.addEventListener('click',()=>{
+            const c=$('coverContent').value;if(!c){showToast('璇峰厛鐢熸垚姹傝亴淇?,'warning');return;}
+            navigator.clipboard.writeText(c);showToast('宸插鍒跺埌鍓创鏉?,'success');
+        });
+        $('btnCopy')?.addEventListener('click',()=>{
+            const text=`濮撳悕锛?{resumeData.name}\n姹傝亴鎰忓悜锛?{resumeData.target}\n\n鏁欒偛鑳屾櫙\n瀛︽牎锛?{resumeData.school} | 涓撲笟锛?{resumeData.major}\n${resumeData.eduExtra}\n\n瀹炶返缁忓巻\n${resumeData.experience.filter(e=>e.title).map(e=>`${e.title}\n${e.content}`).join('\n\n')}\n\n椤圭洰缁忓巻\n${resumeData.projects.filter(p=>p.title).map(p=>`${p.title}\n${p.content}`).join('\n\n')}\n\n鑾峰鑽ｈ獕\n${resumeData.awards.filter(a=>a.title).map(a=>`${a.title} ${a.content}`).join('\n')}\n\n鎶€鑳界壒闀縗n${resumeData.skills}`.trim();
+            navigator.clipboard.writeText(text);showToast('宸插鍒跺埌鍓创鏉?,'success');
+        });
+
+        // 缂╂斁
+        $('zoomSlider')?.addEventListener('input',e=>{const s=parseInt(e.target.value)/100;$('previewContainer').style.transform=`scale(${s})`;$('zoomValue').textContent=e.target.value+'%';});
+
+        // 涓婚
+        $('themeList')?.addEventListener('click',e=>{
+            const opt=e.target.closest('.theme-option');if(!opt)return;
+            applyTheme(opt.dataset.theme);
+            document.querySelectorAll('.theme-option').forEach(o=>{o.classList.remove('selected','border-orange-400');o.classList.add('border-slate-200');});
+            opt.classList.add('selected','border-orange-400');opt.classList.remove('border-slate-200');
+            setTimeout(()=>closeModal('modalTheme'),300);
+        });
+
+        // API璁剧疆
+        function showAPISettings(){$('apiKey').value=apiConfig.apiKey;$('groupId').value=apiConfig.groupId;updateAPIStatus();showModal('modalAPISettings');}
+        $('btnSaveAPI')?.addEventListener('click',()=>{
+            apiConfig.apiKey=$('apiKey').value.trim();apiConfig.groupId=$('groupId').value.trim();
+            localStorage.setItem('minimax_api_key',apiConfig.apiKey);localStorage.setItem('minimax_group_id',apiConfig.groupId);
+            updateAPIStatus();showToast('API璁剧疆宸蹭繚瀛?,'success');closeModal('modalAPISettings');
+        });
+
+        // ========== 绉诲姩绔€傞厤 ==========
+        const isMobile=()=>window.innerWidth<=1024;
+        function updateMobileLayout() {
+            const hamburger=document.getElementById('btnHamburger');
+            const mobileTabs=document.getElementById('mobileTabs');
+            if(isMobile()){
+                if(hamburger)hamburger.style.display='flex';
+                if(mobileTabs)mobileTabs.style.display='flex';
+                document.getElementById('editPanel').style.display='block';
+                document.getElementById('mobilePreviewPanel').style.display='none';
+            }else{
+                if(hamburger)hamburger.style.display='none';
+                if(mobileTabs)mobileTabs.style.display='none';
+                document.getElementById('editPanel').style.display='';
+                if(document.getElementById('asidePreview'))document.getElementById('asidePreview').style.display='';
+            }
+        }
+        document.getElementById('btnHamburger')?.addEventListener('click',()=>{
+            document.getElementById('mobileMenu').classList.toggle('show');
+        });
+        document.getElementById('mobileMenu')?.addEventListener('click',e=>{
+            if(e.target.classList.contains('template-card')){document.getElementById('mobileMenu').classList.remove('show');}
+        });
+        document.getElementById('btnExportMobile')?.addEventListener('click',()=>{
+            document.getElementById('mobileMenu').classList.remove('show');
+            $('exportPdf').click();
+        });
+        // Mobile tab switching
+        document.querySelectorAll('.mobile-tab').forEach(tab=>{
+            tab.addEventListener('click',()=>{
+                document.querySelectorAll('.mobile-tab').forEach(t=>t.classList.remove('active'));
+                tab.classList.add('active');
+                if(tab.dataset.tab==='edit'){document.getElementById('editPanel').style.display='block';document.getElementById('mobilePreviewPanel').style.display='none';}
+                else{document.getElementById('editPanel').style.display='none';document.getElementById('mobilePreviewPanel').style.display='block';updateMobilePreview();}
+            });
+        });
+        function updateMobilePreview() {
+            ['name','target','phone','email','school','major','eduExtra','skills'].forEach(f=>{
+                const pm=$(`preview-${f}-m`);const sm=$(`preview-${f}-sidebar-m`);
+                const text=resumeData[f]||getPlaceholder(f);
+                if(pm){pm.textContent=text;pm.classList.toggle('empty-placeholder',!resumeData[f]);}
+                if(sm){sm.textContent=text;sm.classList.toggle('empty-placeholder',!resumeData[f]);}
+            });
+            renderList('experience',null,$('preview-experience-m'));
+            renderList('projects',null,$('preview-project-m'));
+            renderList('awards',null,$('preview-award-m'));
+        }
+        window.addEventListener('resize',updateMobileLayout);
+
+        // ========== 鍒濆鍖?==========
+        updateAPIStatus();renderAll();updateMobileLayout();
+        // 棣栨璁块棶鏄剧ず寮曞
+        if(!localStorage.getItem('zhilv_onboarding_done')&&!isMobile()){setTimeout(()=>showOnboarding(0),800);}
+    </script>
+</body>
+</html>
